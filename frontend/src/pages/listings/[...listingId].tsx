@@ -1,5 +1,4 @@
 import { useQuery } from "@apollo/client";
-import Layout from "@components/Layout";
 import * as markdownComponents from "@components/markdown/components";
 import InfoCard from "@components/pages/listings/detail/InfoCard";
 import ListingBanner from "@components/pages/listings/detail/ListingBanner";
@@ -7,19 +6,22 @@ import ListingBody from "@components/pages/listings/detail/ListingBody";
 import TitleCard from "@components/pages/listings/detail/TitleCard";
 import { LISTING } from "@graphql/listings/queries";
 import { Listing } from "@interfaces/listings";
-import { Button, Container, Grid, Hidden, makeStyles, Paper } from "@material-ui/core";
-import ArrowForward from "@material-ui/icons/ArrowForward";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
-import { NextPage } from "next";
-import Link from "next/link";
+import ArrowForward from "@mui/icons-material/ArrowForward";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { Button, Container, Grid, Hidden, Paper, styled } from "@mui/material";
+import makeStyles from "@mui/styles/makeStyles";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import ReactMarkdown from "react-markdown";
+import Layout from "src/layouts";
+import { HEADER_DESKTOP_HEIGHT, HEADER_MOBILE_HEIGHT } from "src/theme/constants";
+import { NextPageWithLayout } from "../_app";
 
 const useStyles = makeStyles((theme) => ({
   container: {
     paddingBottom: theme.spacing(2),
-    [theme.breakpoints.down("sm")]: {
+    [theme.breakpoints.down("md")]: {
       marginTop: theme.spacing(4),
     },
   },
@@ -39,9 +41,15 @@ const useStyles = makeStyles((theme) => ({
     wordBreak: "break-word",
   },
 }));
+const RootStyle = styled("div")(({ theme }) => ({
+  paddingTop: HEADER_MOBILE_HEIGHT,
+  [theme.breakpoints.up("md")]: {
+    paddingTop: HEADER_DESKTOP_HEIGHT,
+  },
+}));
 
 // page to show details about a listing and its organization
-const ListingPage: NextPage = () => {
+const ListingPage: NextPageWithLayout = () => {
   const { listingId } = useRouter().query;
 
   // fetches the listing, using the URL parameter as the argument
@@ -71,7 +79,7 @@ const ListingPage: NextPage = () => {
   return (
     <>
       {data && (
-        <Layout>
+        <RootStyle>
           <Head>
             <title>{`${data.listing.title} | Foreningen for Studenter ved Industriell Økonomi og Teknologiledelse`}</title>
             {data.listing.heroImageUrl && <meta property="og:image" content={data.listing.heroImageUrl} key="image" />}
@@ -81,7 +89,7 @@ const ListingPage: NextPage = () => {
               key="title"
             />
           </Head>
-          <Hidden smDown>
+          <Hidden mdDown>
             <ListingBanner listing={data.listing} />
           </Hidden>
           <Container className={classes.container}>
@@ -97,7 +105,7 @@ const ListingPage: NextPage = () => {
                 className={classes.root}
               >
                 <Grid container item direction="row" alignItems="stretch" justifyContent="center" spacing={4}>
-                  <Hidden smDown>
+                  <Hidden mdDown>
                     <Grid item xs={4}>
                       <InfoCard listing={data.listing} />
                     </Grid>
@@ -145,10 +153,14 @@ const ListingPage: NextPage = () => {
               </Grid>
             </Paper>
           </Hidden>
-        </Layout>
+        </RootStyle>
       )}
     </>
   );
+};
+
+ListingPage.getLayout = function getLayout(page: React.ReactElement) {
+  return <Layout>{page}</Layout>;
 };
 
 export default ListingPage;
